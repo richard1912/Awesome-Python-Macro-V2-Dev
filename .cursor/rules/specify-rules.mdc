@@ -1,0 +1,25 @@
+# Awesome-Python-Macro-V2-Dev Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-09-17
+
+## Active Technologies
+- Python 3.11+   + PySide6 (Qt6), pynput, keyboard, mouse, pywin32, psutil, Pillow (PIL)   (001-comprehensive-macro-recording)
+
+## Project Structure
+```
+backend/
+frontend/
+tests/
+```
+
+## Commands
+cd src && pytest && ruff check .
+
+## Code Style
+Python 3.11+  : Follow standard conventions
+
+## Recent Changes
+- 001-comprehensive-macro-recording: Added Python 3.11+   + PySide6 (Qt6), pynput, keyboard, mouse, pywin32, psutil, Pillow (PIL)  
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

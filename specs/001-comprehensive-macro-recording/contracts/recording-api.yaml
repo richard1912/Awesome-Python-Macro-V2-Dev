@@ -1,0 +1,288 @@
+openapi: 3.0.3
+info:
+  title: Macro Recording API
+  description: API for recording user input events and managing recording sessions
+  version: 1.0.0
+  contact:
+    name: Awesome Python Macro Team
+    email: support@awesomemacro.com
+
+paths:
+  /recording/start:
+    post:
+      summary: Start recording session
+      description: Begin capturing keyboard and mouse input events
+      operationId: startRecording
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                macro_name:
+                  type: string
+                  description: Name for the macro being recorded
+                  example: "Login Automation"
+                capture_screenshots:
+                  type: boolean
+                  description: Whether to capture screenshots for each action
+                  default: true
+                capture_mouse_movement:
+                  type: boolean
+                  description: Whether to capture mouse movement events
+                  default: true
+                capture_key_releases:
+                  type: boolean
+                  description: Whether to capture key release events
+                  default: false
+              required:
+                - macro_name
+      responses:
+        '200':
+          description: Recording started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the recording session
+                  status:
+                    type: string
+                    enum: [recording]
+                    description: Current recording status
+                  macro_id:
+                    type: string
+                    format: uuid
+                    description: ID of the macro being recorded
+                  started_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when recording started
+        '400':
+          description: Invalid request or recording already active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Recording session already active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recording/stop:
+    post:
+      summary: Stop recording session
+      description: End the current recording session and save captured events
+      operationId: stopRecording
+      responses:
+        '200':
+          description: Recording stopped successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    format: uuid
+                    description: ID of the stopped recording session
+                  macro_id:
+                    type: string
+                    format: uuid
+                    description: ID of the completed macro
+                  actions_count:
+                    type: integer
+                    description: Number of actions recorded
+                  duration_ms:
+                    type: integer
+                    description: Total recording duration in milliseconds
+                  stopped_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when recording stopped
+        '400':
+          description: No active recording session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recording/pause:
+    post:
+      summary: Pause recording session
+      description: Temporarily pause recording without ending the session
+      operationId: pauseRecording
+      responses:
+        '200':
+          description: Recording paused successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    format: uuid
+                    description: ID of the paused recording session
+                  status:
+                    type: string
+                    enum: [paused]
+                    description: Current recording status
+                  paused_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when recording paused
+        '400':
+          description: No active recording session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recording/resume:
+    post:
+      summary: Resume recording session
+      description: Resume a paused recording session
+      operationId: resumeRecording
+      responses:
+        '200':
+          description: Recording resumed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    format: uuid
+                    description: ID of the resumed recording session
+                  status:
+                    type: string
+                    enum: [recording]
+                    description: Current recording status
+                  resumed_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when recording resumed
+        '400':
+          description: No paused recording session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recording/status:
+    get:
+      summary: Get recording status
+      description: Get current recording session status and information
+      operationId: getRecordingStatus
+      responses:
+        '200':
+          description: Current recording status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_active:
+                    type: boolean
+                    description: Whether a recording session is currently active
+                  session_id:
+                    type: string
+                    format: uuid
+                    description: ID of the current recording session
+                    nullable: true
+                  status:
+                    type: string
+                    enum: [recording, paused, stopped]
+                    description: Current recording status
+                  macro_id:
+                    type: string
+                    format: uuid
+                    description: ID of the macro being recorded
+                    nullable: true
+                  actions_count:
+                    type: integer
+                    description: Number of actions recorded so far
+                  started_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when recording started
+                    nullable: true
+        '200':
+          description: No active recording session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_active:
+                    type: boolean
+                    description: Whether a recording session is currently active
+                  status:
+                    type: string
+                    enum: [stopped]
+                    description: Current recording status
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+        details:
+          type: object
+          description: Additional error details
+          nullable: true
+      required:
+        - error
+        - code
+
+    RecordingSession:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the recording session
+        macro_id:
+          type: string
+          format: uuid
+          description: ID of the macro being recorded
+        status:
+          type: string
+          enum: [recording, paused, stopped]
+          description: Current recording status
+        started_at:
+          type: string
+          format: date-time
+          description: Timestamp when recording started
+        actions_count:
+          type: integer
+          description: Number of actions recorded
+        configuration:
+          type: object
+          properties:
+            capture_screenshots:
+              type: boolean
+            capture_mouse_movement:
+              type: boolean
+            capture_key_releases:
+              type: boolean
+      required:
+        - session_id
+        - macro_id
+        - status
+        - started_at
+        - actions_count

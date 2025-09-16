@@ -1,0 +1,482 @@
+openapi: 3.0.3
+info:
+  title: Hotkey Management API
+  description: API for managing global hotkeys and system-wide key combinations
+  version: 1.0.0
+  contact:
+    name: Awesome Python Macro Team
+    email: support@awesomemacro.com
+
+paths:
+  /hotkeys:
+    get:
+      summary: List all hotkeys
+      description: Retrieve all registered hotkeys with their configurations
+      operationId: listHotkeys
+      responses:
+        '200':
+          description: List of hotkeys retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hotkeys:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Hotkey'
+                  total_count:
+                    type: integer
+                    description: Total number of registered hotkeys
+
+    post:
+      summary: Register new hotkey
+      description: Register a new global hotkey with specified action
+      operationId: registerHotkey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key_combination:
+                  type: string
+                  description: Key combination string (e.g., "Ctrl+Shift+F9")
+                  example: "Ctrl+Shift+F9"
+                action_type:
+                  type: string
+                  enum: [start_recording, stop_recording, play_macro, show_window, hide_window, minimize_to_tray, custom_action]
+                  description: Type of action to perform
+                macro_id:
+                  type: string
+                  format: uuid
+                  description: ID of macro to play (required for play_macro action)
+                is_enabled:
+                  type: boolean
+                  description: Whether the hotkey is enabled
+                  default: true
+                is_global:
+                  type: boolean
+                  description: Whether to register system-wide
+                  default: true
+                conflict_resolution:
+                  type: string
+                  enum: [prompt_user, auto_resolve, ignore]
+                  description: How to handle conflicts with existing hotkeys
+                  default: prompt_user
+                description:
+                  type: string
+                  description: Optional description of the hotkey
+              required:
+                - key_combination
+                - action_type
+      responses:
+        '201':
+          description: Hotkey registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotkey'
+        '400':
+          description: Invalid request or duplicate key combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Hotkey conflict detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotkeyConflictError'
+
+  /hotkeys/{hotkey_id}:
+    get:
+      summary: Get hotkey details
+      description: Retrieve detailed information about a specific hotkey
+      operationId: getHotkey
+      parameters:
+        - name: hotkey_id
+          in: path
+          required: true
+          description: Unique identifier of the hotkey
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Hotkey details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotkey'
+        '404':
+          description: Hotkey not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update hotkey
+      description: Update hotkey configuration and settings
+      operationId: updateHotkey
+      parameters:
+        - name: hotkey_id
+          in: path
+          required: true
+          description: Unique identifier of the hotkey
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key_combination:
+                  type: string
+                  description: New key combination
+                action_type:
+                  type: string
+                  enum: [start_recording, stop_recording, play_macro, show_window, hide_window, minimize_to_tray, custom_action]
+                  description: New action type
+                macro_id:
+                  type: string
+                  format: uuid
+                  description: New macro ID for play_macro action
+                is_enabled:
+                  type: boolean
+                  description: Whether to enable the hotkey
+                is_global:
+                  type: boolean
+                  description: Whether to register system-wide
+                conflict_resolution:
+                  type: string
+                  enum: [prompt_user, auto_resolve, ignore]
+                  description: New conflict resolution strategy
+                description:
+                  type: string
+                  description: New description
+      responses:
+        '200':
+          description: Hotkey updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotkey'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Hotkey not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Hotkey conflict detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotkeyConflictError'
+
+    delete:
+      summary: Unregister hotkey
+      description: Unregister and remove a hotkey
+      operationId: unregisterHotkey
+      parameters:
+        - name: hotkey_id
+          in: path
+          required: true
+          description: Unique identifier of the hotkey
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Hotkey unregistered successfully
+        '404':
+          description: Hotkey not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hotkeys/{hotkey_id}/enable:
+    post:
+      summary: Enable hotkey
+      description: Enable a previously disabled hotkey
+      operationId: enableHotkey
+      parameters:
+        - name: hotkey_id
+          in: path
+          required: true
+          description: Unique identifier of the hotkey
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Hotkey enabled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotkey'
+        '404':
+          description: Hotkey not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hotkeys/{hotkey_id}/disable:
+    post:
+      summary: Disable hotkey
+      description: Temporarily disable a hotkey without unregistering it
+      operationId: disableHotkey
+      parameters:
+        - name: hotkey_id
+          in: path
+          required: true
+          description: Unique identifier of the hotkey
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Hotkey disabled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hotkey'
+        '404':
+          description: Hotkey not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hotkeys/conflicts:
+    get:
+      summary: Check for conflicts
+      description: Check for conflicts with system or application hotkeys
+      operationId: checkHotkeyConflicts
+      parameters:
+        - name: key_combination
+          in: query
+          required: true
+          description: Key combination to check
+          schema:
+            type: string
+            example: "Ctrl+Shift+F9"
+      responses:
+        '200':
+          description: Conflict check completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  has_conflicts:
+                    type: boolean
+                    description: Whether conflicts were detected
+                  conflicts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HotkeyConflict'
+                    description: List of detected conflicts
+                  recommendations:
+                    type: array
+                    items:
+                      type: string
+                    description: Suggested alternative key combinations
+        '400':
+          description: Invalid key combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /hotkeys/test:
+    post:
+      summary: Test hotkey registration
+      description: Test if a key combination can be registered without conflicts
+      operationId: testHotkey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key_combination:
+                  type: string
+                  description: Key combination to test
+                  example: "Ctrl+Shift+F9"
+                duration_ms:
+                  type: integer
+                  minimum: 1000
+                  maximum: 10000
+                  default: 3000
+                  description: Duration to keep hotkey registered for testing
+              required:
+                - key_combination
+      responses:
+        '200':
+          description: Hotkey test completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Whether the test was successful
+                  registered_at:
+                    type: string
+                    format: date-time
+                    description: When the test hotkey was registered
+                  unregistered_at:
+                    type: string
+                    format: date-time
+                    description: When the test hotkey was unregistered
+                  conflicts_detected:
+                    type: boolean
+                    description: Whether conflicts were detected during test
+                  message:
+                    type: string
+                    description: Test result message
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Hotkey:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier
+        key_combination:
+          type: string
+          description: Key combination string
+        action_type:
+          type: string
+          enum: [start_recording, stop_recording, play_macro, show_window, hide_window, minimize_to_tray, custom_action]
+          description: Type of action to perform
+        macro_id:
+          type: string
+          format: uuid
+          description: ID of macro to play (for play_macro action)
+          nullable: true
+        is_enabled:
+          type: boolean
+          description: Whether the hotkey is enabled
+        is_global:
+          type: boolean
+          description: Whether registered system-wide
+        conflict_resolution:
+          type: string
+          enum: [prompt_user, auto_resolve, ignore]
+          description: Conflict resolution strategy
+        description:
+          type: string
+          description: Optional description
+        registered_at:
+          type: string
+          format: date-time
+          description: When the hotkey was registered
+        last_triggered:
+          type: string
+          format: date-time
+          description: When the hotkey was last triggered
+          nullable: true
+        trigger_count:
+          type: integer
+          description: Number of times the hotkey has been triggered
+      required:
+        - id
+        - key_combination
+        - action_type
+        - is_enabled
+        - is_global
+        - conflict_resolution
+
+    HotkeyConflict:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [system, application, other]
+          description: Type of conflict
+        application:
+          type: string
+          description: Name of conflicting application
+        hotkey_id:
+          type: string
+          format: uuid
+          description: ID of conflicting hotkey (if application conflict)
+          nullable: true
+        description:
+          type: string
+          description: Description of the conflict
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+          description: Severity of the conflict
+      required:
+        - type
+        - severity
+
+    HotkeyConflictError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+        conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/HotkeyConflict'
+          description: List of detected conflicts
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: Suggested alternative key combinations
+      required:
+        - error
+        - code
+        - conflicts
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+        details:
+          type: object
+          description: Additional error details
+          nullable: true
+      required:
+        - error
+        - code

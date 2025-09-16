@@ -1,0 +1,636 @@
+openapi: 3.0.3
+info:
+  title: Macro Management API
+  description: API for managing macro CRUD operations, organization, and search
+  version: 1.0.0
+  contact:
+    name: Awesome Python Macro Team
+    email: support@awesomemacro.com
+
+paths:
+  /macros:
+    get:
+      summary: List all macros
+      description: Retrieve a list of all macros with optional filtering and pagination
+      operationId: listMacros
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of macros per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: search
+          in: query
+          description: Search term for macro name or description
+          required: false
+          schema:
+            type: string
+        - name: tags
+          in: query
+          description: Filter by tags (comma-separated)
+          required: false
+          schema:
+            type: string
+        - name: sort_by
+          in: query
+          description: Sort field
+          required: false
+          schema:
+            type: string
+            enum: [name, created_at, modified_at, duration]
+            default: modified_at
+        - name: sort_order
+          in: query
+          description: Sort order
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: List of macros retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  macros:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MacroSummary'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+                  total_count:
+                    type: integer
+                    description: Total number of macros matching the criteria
+
+    post:
+      summary: Create new macro
+      description: Create a new macro with initial metadata
+      operationId: createMacro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name for the macro
+                  example: "Login Automation"
+                description:
+                  type: string
+                  description: Optional description of the macro
+                  example: "Automates user login process"
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  description: Tags for categorization
+                  example: ["login", "automation"]
+                is_favorite:
+                  type: boolean
+                  description: Whether to mark as favorite
+                  default: false
+              required:
+                - name
+      responses:
+        '201':
+          description: Macro created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Macro'
+        '400':
+          description: Invalid request or duplicate name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /macros/{macro_id}:
+    get:
+      summary: Get macro details
+      description: Retrieve detailed information about a specific macro
+      operationId: getMacro
+      parameters:
+        - name: macro_id
+          in: path
+          required: true
+          description: Unique identifier of the macro
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Macro details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Macro'
+        '404':
+          description: Macro not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update macro
+      description: Update macro metadata and properties
+      operationId: updateMacro
+      parameters:
+        - name: macro_id
+          in: path
+          required: true
+          description: Unique identifier of the macro
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: New name for the macro
+                description:
+                  type: string
+                  description: New description for the macro
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  description: New tags for the macro
+                is_favorite:
+                  type: boolean
+                  description: Whether to mark as favorite
+                playback_speed:
+                  type: number
+                  minimum: 0.1
+                  maximum: 10.0
+                  description: Default playback speed
+                loop_count:
+                  type: integer
+                  minimum: 0
+                  description: Default loop count
+                loop_interval:
+                  type: number
+                  minimum: 0
+                  description: Default loop interval in seconds
+      responses:
+        '200':
+          description: Macro updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Macro'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Macro not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete macro
+      description: Delete a macro and all its associated data
+      operationId: deleteMacro
+      parameters:
+        - name: macro_id
+          in: path
+          required: true
+          description: Unique identifier of the macro
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Macro deleted successfully
+        '404':
+          description: Macro not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /macros/{macro_id}/duplicate:
+    post:
+      summary: Duplicate macro
+      description: Create a copy of an existing macro with a new name
+      operationId: duplicateMacro
+      parameters:
+        - name: macro_id
+          in: path
+          required: true
+          description: Unique identifier of the macro to duplicate
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_name:
+                  type: string
+                  description: Name for the duplicated macro
+                copy_actions:
+                  type: boolean
+                  description: Whether to copy all actions
+                  default: true
+                copy_screenshots:
+                  type: boolean
+                  description: Whether to copy screenshots
+                  default: true
+              required:
+                - new_name
+      responses:
+        '201':
+          description: Macro duplicated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Macro'
+        '400':
+          description: Invalid request or duplicate name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Source macro not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /macros/{macro_id}/actions:
+    get:
+      summary: Get macro actions
+      description: Retrieve all actions for a specific macro
+      operationId: getMacroActions
+      parameters:
+        - name: macro_id
+          in: path
+          required: true
+          description: Unique identifier of the macro
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Macro actions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Action'
+                  total_count:
+                    type: integer
+                    description: Total number of actions
+                  macro_duration:
+                    type: integer
+                    description: Total macro duration in milliseconds
+        '404':
+          description: Macro not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /macros/{macro_id}/actions/{action_id}:
+    get:
+      summary: Get action details
+      description: Retrieve detailed information about a specific action
+      operationId: getAction
+      parameters:
+        - name: macro_id
+          in: path
+          required: true
+          description: Unique identifier of the macro
+          schema:
+            type: string
+            format: uuid
+        - name: action_id
+          in: path
+          required: true
+          description: Unique identifier of the action
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Action details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Action'
+        '404':
+          description: Action not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update action
+      description: Update action properties and parameters
+      operationId: updateAction
+      parameters:
+        - name: macro_id
+          in: path
+          required: true
+          description: Unique identifier of the macro
+          schema:
+            type: string
+            format: uuid
+        - name: action_id
+          in: path
+          required: true
+          description: Unique identifier of the action
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                timestamp:
+                  type: integer
+                  minimum: 0
+                  description: New timestamp in milliseconds
+                key_code:
+                  type: integer
+                  description: New key code (for keyboard actions)
+                key_name:
+                  type: string
+                  description: New key name (for keyboard actions)
+                modifier_keys:
+                  type: array
+                  items:
+                    type: string
+                    enum: [Ctrl, Alt, Shift, Win]
+                  description: New modifier keys (for keyboard actions)
+                mouse_button:
+                  type: string
+                  enum: [left, right, middle, wheel]
+                  description: New mouse button (for mouse actions)
+                x_coordinate:
+                  type: integer
+                  description: New X coordinate (for mouse actions)
+                y_coordinate:
+                  type: integer
+                  description: New Y coordinate (for mouse actions)
+                scroll_direction:
+                  type: string
+                  description: New scroll direction and amount (for scroll actions)
+                delay_duration:
+                  type: integer
+                  minimum: 0
+                  description: New delay duration in milliseconds (for delay actions)
+                comment:
+                  type: string
+                  description: New comment for the action
+      responses:
+        '200':
+          description: Action updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Action'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Action not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete action
+      description: Delete a specific action from a macro
+      operationId: deleteAction
+      parameters:
+        - name: macro_id
+          in: path
+          required: true
+          description: Unique identifier of the macro
+          schema:
+            type: string
+            format: uuid
+        - name: action_id
+          in: path
+          required: true
+          description: Unique identifier of the action
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Action deleted successfully
+        '404':
+          description: Action not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Macro:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier
+        name:
+          type: string
+          description: Macro name
+        description:
+          type: string
+          description: Macro description
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        modified_at:
+          type: string
+          format: date-time
+          description: Last modification timestamp
+        version:
+          type: integer
+          description: Version number
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags for categorization
+        is_favorite:
+          type: boolean
+          description: Whether marked as favorite
+        playback_speed:
+          type: number
+          description: Default playback speed
+        loop_count:
+          type: integer
+          description: Default loop count
+        loop_interval:
+          type: number
+          description: Default loop interval in seconds
+        actions_count:
+          type: integer
+          description: Number of actions in the macro
+        duration_ms:
+          type: integer
+          description: Total duration in milliseconds
+      required:
+        - id
+        - name
+        - created_at
+        - modified_at
+        - version
+
+    MacroSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+        is_favorite:
+          type: boolean
+        actions_count:
+          type: integer
+        duration_ms:
+          type: integer
+      required:
+        - id
+        - name
+        - created_at
+        - modified_at
+
+    Action:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        macro_id:
+          type: string
+          format: uuid
+        action_type:
+          type: string
+          enum: [keyboard_press, keyboard_release, mouse_click, mouse_move, mouse_scroll, delay]
+        timestamp:
+          type: integer
+        key_code:
+          type: integer
+        key_name:
+          type: string
+        modifier_keys:
+          type: array
+          items:
+            type: string
+        mouse_button:
+          type: string
+        x_coordinate:
+          type: integer
+        y_coordinate:
+          type: integer
+        scroll_direction:
+          type: string
+        delay_duration:
+          type: integer
+        comment:
+          type: string
+      required:
+        - id
+        - macro_id
+        - action_type
+        - timestamp
+
+    PaginationInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total_pages:
+          type: integer
+        has_next:
+          type: boolean
+        has_previous:
+          type: boolean
+      required:
+        - page
+        - limit
+        - total_pages
+        - has_next
+        - has_previous
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+          nullable: true
+      required:
+        - error
+        - code

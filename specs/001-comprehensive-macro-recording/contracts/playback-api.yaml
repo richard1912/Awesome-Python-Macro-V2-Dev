@@ -1,0 +1,402 @@
+openapi: 3.0.3
+info:
+  title: Macro Playback API
+  description: API for executing recorded macros with precise timing and control
+  version: 1.0.0
+  contact:
+    name: Awesome Python Macro Team
+    email: support@awesomemacro.com
+
+paths:
+  /playback/start:
+    post:
+      summary: Start macro playback
+      description: Begin executing a recorded macro with specified parameters
+      operationId: startPlayback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                macro_id:
+                  type: string
+                  format: uuid
+                  description: ID of the macro to execute
+                playback_speed:
+                  type: number
+                  minimum: 0.1
+                  maximum: 10.0
+                  default: 1.0
+                  description: Speed multiplier for playback (1.0 = normal speed)
+                loop_count:
+                  type: integer
+                  minimum: 0
+                  default: 1
+                  description: Number of times to repeat (0 = infinite)
+                loop_interval:
+                  type: number
+                  minimum: 0
+                  default: 0
+                  description: Delay between loop iterations in seconds
+                start_from_action:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                  description: Action index to start playback from
+                stop_at_action:
+                  type: integer
+                  minimum: 0
+                  description: Action index to stop playback at (null = play all)
+                break_on_error:
+                  type: boolean
+                  default: true
+                  description: Whether to stop on execution errors
+              required:
+                - macro_id
+      responses:
+        '200':
+          description: Playback started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the playback session
+                  status:
+                    type: string
+                    enum: [playing]
+                    description: Current playback status
+                  macro_id:
+                    type: string
+                    format: uuid
+                    description: ID of the macro being played
+                  total_actions:
+                    type: integer
+                    description: Total number of actions to execute
+                  started_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when playback started
+                  estimated_duration:
+                    type: integer
+                    description: Estimated total duration in milliseconds
+        '400':
+          description: Invalid request or macro not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Playback session already active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /playback/stop:
+    post:
+      summary: Stop macro playback
+      description: Immediately stop the current playback session
+      operationId: stopPlayback
+      responses:
+        '200':
+          description: Playback stopped successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    format: uuid
+                    description: ID of the stopped playback session
+                  macro_id:
+                    type: string
+                    format: uuid
+                    description: ID of the macro that was playing
+                  actions_executed:
+                    type: integer
+                    description: Number of actions executed before stopping
+                  total_actions:
+                    type: integer
+                    description: Total number of actions in the macro
+                  stopped_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when playback stopped
+        '400':
+          description: No active playback session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /playback/pause:
+    post:
+      summary: Pause macro playback
+      description: Temporarily pause playback without ending the session
+      operationId: pausePlayback
+      responses:
+        '200':
+          description: Playback paused successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    format: uuid
+                    description: ID of the paused playback session
+                  status:
+                    type: string
+                    enum: [paused]
+                    description: Current playback status
+                  current_action:
+                    type: integer
+                    description: Index of the currently executing action
+                  paused_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when playback paused
+        '400':
+          description: No active playback session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /playback/resume:
+    post:
+      summary: Resume macro playback
+      description: Resume a paused playback session
+      operationId: resumePlayback
+      responses:
+        '200':
+          description: Playback resumed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    format: uuid
+                    description: ID of the resumed playback session
+                  status:
+                    type: string
+                    enum: [playing]
+                    description: Current playback status
+                  current_action:
+                    type: integer
+                    description: Index of the currently executing action
+                  resumed_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when playback resumed
+        '400':
+          description: No paused playback session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /playback/status:
+    get:
+      summary: Get playback status
+      description: Get current playback session status and progress information
+      operationId: getPlaybackStatus
+      responses:
+        '200':
+          description: Current playback status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_active:
+                    type: boolean
+                    description: Whether a playback session is currently active
+                  session_id:
+                    type: string
+                    format: uuid
+                    description: ID of the current playback session
+                    nullable: true
+                  status:
+                    type: string
+                    enum: [playing, paused, stopped, completed]
+                    description: Current playback status
+                  macro_id:
+                    type: string
+                    format: uuid
+                    description: ID of the macro being played
+                    nullable: true
+                  current_action:
+                    type: integer
+                    description: Index of the currently executing action
+                  total_actions:
+                    type: integer
+                    description: Total number of actions in the macro
+                  progress_percentage:
+                    type: number
+                    minimum: 0
+                    maximum: 100
+                    description: Playback progress as percentage
+                  loop_current:
+                    type: integer
+                    description: Current loop iteration
+                  loop_total:
+                    type: integer
+                    description: Total number of loops
+                  started_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when playback started
+                    nullable: true
+                  estimated_completion:
+                    type: string
+                    format: date-time
+                    description: Estimated completion time
+                    nullable: true
+        '200':
+          description: No active playback session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_active:
+                    type: boolean
+                    description: Whether a playback session is currently active
+                  status:
+                    type: string
+                    enum: [stopped]
+                    description: Current playback status
+
+  /playback/step:
+    post:
+      summary: Execute single action
+      description: Execute a single action from a macro (for debugging)
+      operationId: stepPlayback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                macro_id:
+                  type: string
+                  format: uuid
+                  description: ID of the macro
+                action_index:
+                  type: integer
+                  minimum: 0
+                  description: Index of the action to execute
+              required:
+                - macro_id
+                - action_index
+      responses:
+        '200':
+          description: Action executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action_index:
+                    type: integer
+                    description: Index of the executed action
+                  action_type:
+                    type: string
+                    description: Type of action executed
+                  executed_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when action was executed
+                  success:
+                    type: boolean
+                    description: Whether action executed successfully
+                  error_message:
+                    type: string
+                    description: Error message if execution failed
+                    nullable: true
+        '400':
+          description: Invalid request or action not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+        details:
+          type: object
+          description: Additional error details
+          nullable: true
+      required:
+        - error
+        - code
+
+    PlaybackSession:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the playback session
+        macro_id:
+          type: string
+          format: uuid
+          description: ID of the macro being played
+        status:
+          type: string
+          enum: [playing, paused, stopped, completed]
+          description: Current playback status
+        started_at:
+          type: string
+          format: date-time
+          description: Timestamp when playback started
+        current_action:
+          type: integer
+          description: Index of the currently executing action
+        total_actions:
+          type: integer
+          description: Total number of actions in the macro
+        configuration:
+          type: object
+          properties:
+            playback_speed:
+              type: number
+            loop_count:
+              type: integer
+            loop_interval:
+              type: number
+            start_from_action:
+              type: integer
+            stop_at_action:
+              type: integer
+              nullable: true
+            break_on_error:
+              type: boolean
+      required:
+        - session_id
+        - macro_id
+        - status
+        - started_at
+        - current_action
+        - total_actions
