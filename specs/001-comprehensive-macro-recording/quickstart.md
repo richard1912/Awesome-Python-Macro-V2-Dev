@@ -36,9 +36,8 @@ This quickstart guide validates the complete user workflow from recording a macr
 
 **Steps**:
 1. Click "New Macro" button or press Ctrl+Shift+F9
-2. Enter macro name: "Test Login"
-3. Click "Start Recording"
-4. Perform these actions:
+2. Click "Start Recording"
+3. Perform these actions:
    - Click in a text field
    - Type "testuser"
    - Press Tab
@@ -46,7 +45,8 @@ This quickstart guide validates the complete user workflow from recording a macr
    - Press Enter
    - Wait 2 seconds
    - Click a submit button
-5. Press Ctrl+Shift+F10 to stop recording
+4. Press Ctrl+Shift+F10 to stop recording
+5. Enter macro name: "Test Login"
 
 **Expected Results**:
 - ✅ Recording starts immediately when hotkey pressed
