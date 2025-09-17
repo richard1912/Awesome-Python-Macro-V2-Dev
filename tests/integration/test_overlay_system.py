@@ -4,7 +4,7 @@ from src.models.action import Action
 from src.ui.action_overlay import ActionOverlay
 
 
-def test_overlay_highlights_action_coordinates():
+def test_overlay_highlights_action_coordinates(qapp):
     overlay = ActionOverlay()
     action = Action.mouse_click(macro_id="macro", button="left", x=320, y=240, timestamp_ms=100)
     overlay.show_action(action)

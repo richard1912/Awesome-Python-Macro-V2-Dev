@@ -16,7 +16,7 @@ class DummyPlayback(PlaybackService):
         return super().play_macro(macro, **kwargs)
 
 
-def test_system_tray_lists_macros_and_triggers_playback(tmp_path):
+def test_system_tray_lists_macros_and_triggers_playback(tmp_path, qapp):
     storage = JSONStorageManager(base_path=tmp_path / "data")
     macro_service = MacroService(storage_manager=storage)
     macro = macro_service.create_macro(name="Tray Macro")

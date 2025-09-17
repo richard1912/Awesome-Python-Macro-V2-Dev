@@ -3,14 +3,14 @@ from __future__ import annotations
 from main import ApplicationContext, build_application, resolve_data_dir
 
 
-def test_build_application_initializes_services(tmp_path):
+def test_build_application_initializes_services(tmp_path, qapp):
     context = build_application(tmp_path)
     assert isinstance(context, ApplicationContext)
     assert context.data_dir == tmp_path.resolve()
     assert "macro create" in context.available_commands()
 
 
-def test_execute_cli_command_creates_macro(tmp_path):
+def test_execute_cli_command_creates_macro(tmp_path, qapp):
     context = build_application(tmp_path)
     response = context.execute_cli_command("macro create name=EntryPointTest")
     assert response.ok
@@ -18,7 +18,7 @@ def test_execute_cli_command_creates_macro(tmp_path):
     assert "EntryPointTest" in names
 
 
-def test_execute_cli_command_handles_errors(tmp_path):
+def test_execute_cli_command_handles_errors(tmp_path, qapp):
     context = build_application(tmp_path)
 
     def _boom(**_: object):

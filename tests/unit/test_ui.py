@@ -13,7 +13,7 @@ from src.ui.settings_dialog import SettingsDialog
 from src.utils.windows_api import WindowsAPIWrapper
 
 
-def test_main_window_refreshes_macro_list(tmp_path):
+def test_main_window_refreshes_macro_list(tmp_path, qapp):
     storage = JSONStorageManager(base_path=tmp_path / "data")
     macro_service = MacroService(storage_manager=storage)
     macro_service.create_macro(name="UI Macro")
@@ -26,7 +26,7 @@ def test_main_window_refreshes_macro_list(tmp_path):
     assert window.macro_list_widget.count == 1
 
 
-def test_macro_editor_updates_macro(tmp_path):
+def test_macro_editor_updates_macro(tmp_path, qapp):
     storage = JSONStorageManager(base_path=tmp_path / "data")
     macro_service = MacroService(storage_manager=storage)
     macro = macro_service.create_macro(name="Editor Macro")
@@ -37,7 +37,7 @@ def test_macro_editor_updates_macro(tmp_path):
     assert macro_service.get_macro(macro.id).name == "Updated Name"
 
 
-def test_settings_dialog_persists_values():
+def test_settings_dialog_persists_values(qapp):
     settings = UserSettings()
     dialog = SettingsDialog(settings=settings)
     dialog.set_preference("ui.theme", "dark")
@@ -45,7 +45,7 @@ def test_settings_dialog_persists_values():
     assert settings.get_value("ui.theme") == "dark"
 
 
-def test_hotkey_dialog_registers_hotkeys():
+def test_hotkey_dialog_registers_hotkeys(qapp):
     service = HotkeyService(windows_api=WindowsAPIWrapper())
     dialog = HotkeyDialog(service=service)
     dialog.assign_hotkey(

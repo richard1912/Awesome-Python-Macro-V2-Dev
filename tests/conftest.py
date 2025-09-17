@@ -1,14 +1,27 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Callable, Iterator
 
 import pytest
+from PySide6.QtWidgets import QApplication
 
 from src.storage.json_storage import JSONStorageManager
 from src.utils.file_utils import ensure_directory
 from src.utils.validation import ValidationError
+
+
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+
+@pytest.fixture(scope="session")
+def qapp() -> QApplication:
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
+    return app
 
 
 @pytest.fixture()

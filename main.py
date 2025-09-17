@@ -10,6 +10,8 @@ from logging import Logger
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from PySide6.QtWidgets import QApplication
+
 from src.cli.cli_interface import CLIInterface, CLIResponse
 from src.cli.macro_commands import MacroCommandSet
 from src.cli.playback_commands import PlaybackCommandSet
@@ -20,6 +22,7 @@ from src.core.macro_service import MacroService
 from src.export_import.package_service import PackageService
 from src.hotkeys.hotkey_service import HotkeyService
 from src.models.hotkey import HotkeyActionType
+from src.models.user_settings import UserSettings
 from src.player.playback_service import PlaybackService
 from src.recorder.input_capture import InputCaptureManager
 from src.recorder.recording_service import RecordingService
@@ -50,6 +53,7 @@ class ApplicationContext:
     error_handler: ErrorHandler
     capture_manager: InputCaptureManager
     screenshot_service: ScreenshotService
+    user_settings: UserSettings
     logger: Logger
     captured_errors: List[CapturedException]
 
@@ -131,6 +135,9 @@ def resolve_data_dir(explicit: Optional[Path] = None) -> Path:
 
 def build_application(data_dir: Optional[Path] = None) -> ApplicationContext:
     """Create the application context with fully wired services."""
+    app = QApplication.instance()
+    if app is None:  # pragma: no cover - requires GUI environment
+        app = QApplication([])
     resolved_dir = resolve_data_dir(data_dir)
     resolved_dir.mkdir(parents=True, exist_ok=True)
 
@@ -151,15 +158,19 @@ def build_application(data_dir: Optional[Path] = None) -> ApplicationContext:
     )
     windows_api = WindowsAPIWrapper()
     hotkey_service = HotkeyService(windows_api=windows_api)
-    system_tray = SystemTrayManager(
-        macro_service=macro_service,
-        playback_service=playback_service,
-    )
+    user_settings = storage.load_settings()
     main_window = MainWindow(
         macro_service=macro_service,
         playback_service=playback_service,
         hotkey_service=hotkey_service,
+        settings=user_settings,
+        storage_manager=storage,
     )
+    system_tray = SystemTrayManager(
+        macro_service=macro_service,
+        playback_service=playback_service,
+    )
+    main_window.attach_system_tray(system_tray)
     cli = CLIInterface()
     cli.register_commands(RecordingCommandSet(recording_service))
     cli.register_commands(PlaybackCommandSet(playback_service, macro_service))
@@ -196,6 +207,7 @@ def build_application(data_dir: Optional[Path] = None) -> ApplicationContext:
         error_handler=error_handler,
         capture_manager=capture_manager,
         screenshot_service=screenshot_service,
+        user_settings=user_settings,
         logger=logger,
         captured_errors=captured_errors,
     )
@@ -229,7 +241,7 @@ def _register_hotkey_handlers(context: ApplicationContext) -> None:
             macro.name,
             hotkey.key_combination,
         )
-        context.playback_service.play_macro(macro)
+        context.main_window.play_macro(macro.id)
 
     def _start_recording(_hotkey) -> None:
         name = f"Quick Recording {datetime.now().strftime('%Y%m%d-%H%M%S')}"
@@ -254,13 +266,22 @@ def _register_hotkey_handlers(context: ApplicationContext) -> None:
 
     def _show_window(_hotkey) -> None:
         context.logger.info("Hotkey triggered main window refresh")
+        context.main_window.show()
+        context.main_window.raise_()
+        context.main_window.activateWindow()
         context.refresh_state()
 
     def _hide_window(_hotkey) -> None:
         context.logger.info("Hotkey triggered main window hide request")
+        context.main_window.hide()
 
     def _minimize_to_tray(_hotkey) -> None:
         context.logger.info("Hotkey triggered minimize-to-tray request")
+        context.main_window.hide()
+        context.system_tray.show_notification(
+            "Awesome Macro",
+            "Application minimized to the system tray.",
+        )
 
     hotkey_service = context.hotkey_service
     hotkey_service.register_action_handler(HotkeyActionType.PLAY_MACRO, _play_macro)
@@ -333,6 +354,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         action="store_true",
         help="Run pending schedules once and exit",
     )
+    parser.add_argument(
+        "--cli-only",
+        action="store_true",
+        help="Launch in CLI-only mode instead of GUI",
+    )
 
     args = parser.parse_args(argv)
     context = build_application(data_dir=args.data_dir)
@@ -350,13 +376,18 @@ def main(argv: Optional[List[str]] = None) -> int:
         list_macros(context)
         return 0
 
-    if sys.stdin.isatty():
+    if args.cli_only:
         run_cli_loop(context)
+        return 0
+
+    # Launch GUI by default
+    context.main_window.show()
+    app = QApplication.instance()
+    if app:
+        return app.exec()
     else:
-        context.logger.info(
-            "No interactive terminal detected; initialization complete. Use --cli for commands.",
-        )
-    return 0
+        context.logger.error("QApplication not initialized")
+        return 1
 
 
 if __name__ == "__main__":
