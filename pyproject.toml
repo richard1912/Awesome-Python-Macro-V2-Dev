@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "awesome-python-macro"
+version = "0.1.0"
+description = "Cross-platform macro recording, playback, and automation toolkit"
+authors = [{ name = "Awesome Macro Team", email = "automation@example.com" }]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "PySide6>=6.6",
+    "pynput>=1.7",
+    "keyboard>=0.13",
+    "mouse>=0.7",
+    "pywin32>=306",
+    "psutil>=5.9",
+    "Pillow>=10.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-qt>=4.3",
+    "pytest-mock>=3.12",
+    "black>=24.0",
+    "flake8>=7.0",
+    "isort>=5.12",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+include = "src"
+exclude = "tests/data"
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["core", "recorder", "player", "storage", "utils", "scheduler", "hotkeys", "export_import", "cli", "models"]
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "W503"]
+exclude = [".venv", "build", "dist"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-q"
+testpaths = [
+    "tests/contract",
+    "tests/integration",
+    "tests/unit",
+    "tests/performance",
+]
