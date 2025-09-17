@@ -41,101 +41,101 @@
 - Paths shown below assume single project - adjust based on plan.md structure
 
 ## Phase 3.1: Setup
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize Python project with PySide6, pynput, pywin32 dependencies
-- [ ] T003 [P] Configure black, flake8, isort linting and formatting tools
+- [x] T001 Create project structure per implementation plan
+- [x] T002 Initialize Python project with PySide6, pynput, pywin32 dependencies
+- [x] T003 [P] Configure black, flake8, isort linting and formatting tools
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 
 ### Contract Tests
-- [ ] T004 [P] Contract test recording API in tests/contract/test_recording_api.py
-- [ ] T005 [P] Contract test playback API in tests/contract/test_playback_api.py
-- [ ] T006 [P] Contract test macro management API in tests/contract/test_macro_management_api.py
-- [ ] T007 [P] Contract test hotkey API in tests/contract/test_hotkey_api.py
+- [x] T004 [P] Contract test recording API in tests/contract/test_recording_api.py
+- [x] T005 [P] Contract test playback API in tests/contract/test_playback_api.py
+- [x] T006 [P] Contract test macro management API in tests/contract/test_macro_management_api.py
+- [x] T007 [P] Contract test hotkey API in tests/contract/test_hotkey_api.py
 
 ### Integration Tests
-- [ ] T008 [P] Integration test recording workflow in tests/integration/test_recording_workflow.py
-- [ ] T009 [P] Integration test playback workflow in tests/integration/test_playback_workflow.py
-- [ ] T010 [P] Integration test hotkey management in tests/integration/test_hotkey_management.py
-- [ ] T011 [P] Integration test macro organization in tests/integration/test_macro_organization.py
-- [ ] T012 [P] Integration test export/import in tests/integration/test_export_import.py
-- [ ] T013 [P] Integration test scheduling system in tests/integration/test_scheduling.py
-- [ ] T014 [P] Integration test system tray integration in tests/integration/test_system_tray.py
-- [ ] T015 [P] Integration test visual overlay system in tests/integration/test_overlay_system.py
+- [x] T008 [P] Integration test recording workflow in tests/integration/test_recording_workflow.py
+- [x] T009 [P] Integration test playback workflow in tests/integration/test_playback_workflow.py
+- [x] T010 [P] Integration test hotkey management in tests/integration/test_hotkey_management.py
+- [x] T011 [P] Integration test macro organization in tests/integration/test_macro_organization.py
+- [x] T012 [P] Integration test export/import in tests/integration/test_export_import.py
+- [x] T013 [P] Integration test scheduling system in tests/integration/test_scheduling.py
+- [x] T014 [P] Integration test system tray integration in tests/integration/test_system_tray.py
+- [x] T015 [P] Integration test visual overlay system in tests/integration/test_overlay_system.py
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 
 ### Data Models
-- [ ] T016 [P] Macro model in src/models/macro.py
-- [ ] T017 [P] Action model in src/models/action.py
-- [ ] T018 [P] Screenshot model in src/models/screenshot.py
-- [ ] T019 [P] Hotkey model in src/models/hotkey.py
-- [ ] T020 [P] Schedule model in src/models/schedule.py
-- [ ] T021 [P] Macro Package model in src/models/macro_package.py
-- [ ] T022 [P] User Settings model in src/models/user_settings.py
+- [x] T016 [P] Macro model in src/models/macro.py
+- [x] T017 [P] Action model in src/models/action.py
+- [x] T018 [P] Screenshot model in src/models/screenshot.py
+- [x] T019 [P] Hotkey model in src/models/hotkey.py
+- [x] T020 [P] Schedule model in src/models/schedule.py
+- [x] T021 [P] Macro Package model in src/models/macro_package.py
+- [x] T022 [P] User Settings model in src/models/user_settings.py
 
 ### Storage Layer
-- [ ] T023 [P] JSON storage manager in src/storage/json_storage.py
-- [ ] T024 [P] File system utilities in src/utils/file_utils.py
-- [ ] T025 [P] Data validation utilities in src/utils/validation.py
+- [x] T023 [P] JSON storage manager in src/storage/json_storage.py
+- [x] T024 [P] File system utilities in src/utils/file_utils.py
+- [x] T025 [P] Data validation utilities in src/utils/validation.py
 
 ### Core Services
-- [ ] T026 [P] Recording service in src/recorder/recording_service.py
-- [ ] T027 [P] Playback service in src/player/playback_service.py
-- [ ] T028 [P] Hotkey service in src/hotkeys/hotkey_service.py
-- [ ] T029 [P] Macro management service in src/core/macro_service.py
-- [ ] T030 [P] Scheduling service in src/scheduler/scheduling_service.py
-- [ ] T031 [P] Export/import service in src/export_import/package_service.py
+- [x] T026 [P] Recording service in src/recorder/recording_service.py
+- [x] T027 [P] Playback service in src/player/playback_service.py
+- [x] T028 [P] Hotkey service in src/hotkeys/hotkey_service.py
+- [x] T029 [P] Macro management service in src/core/macro_service.py
+- [x] T030 [P] Scheduling service in src/scheduler/scheduling_service.py
+- [x] T031 [P] Export/import service in src/export_import/package_service.py
 
 ### Input Capture System
-- [ ] T032 [P] Input capture manager in src/recorder/input_capture.py
-- [ ] T033 [P] Keyboard input handler in src/recorder/keyboard_handler.py
-- [ ] T034 [P] Mouse input handler in src/recorder/mouse_handler.py
-- [ ] T035 [P] Screenshot capture service in src/utils/screenshot_service.py
+- [x] T032 [P] Input capture manager in src/recorder/input_capture.py
+- [x] T033 [P] Keyboard input handler in src/recorder/keyboard_handler.py
+- [x] T034 [P] Mouse input handler in src/recorder/mouse_handler.py
+- [x] T035 [P] Screenshot capture service in src/utils/screenshot_service.py
 
 ### Windows Integration
-- [ ] T036 [P] Windows API wrapper in src/utils/windows_api.py
-- [ ] T037 [P] DPI awareness handler in src/utils/dpi_handler.py
-- [ ] T038 [P] System tray manager in src/ui/system_tray.py
+- [x] T036 [P] Windows API wrapper in src/utils/windows_api.py
+- [x] T037 [P] DPI awareness handler in src/utils/dpi_handler.py
+- [x] T038 [P] System tray manager in src/ui/system_tray.py
 
 ### GUI Components
-- [ ] T039 [P] Main window in src/ui/main_window.py
-- [ ] T040 [P] Macro list widget in src/ui/macro_list_widget.py
-- [ ] T041 [P] Macro editor dialog in src/ui/macro_editor_dialog.py
-- [ ] T042 [P] Action overlay system in src/ui/action_overlay.py
-- [ ] T043 [P] Settings dialog in src/ui/settings_dialog.py
-- [ ] T044 [P] Hotkey configuration dialog in src/ui/hotkey_dialog.py
+- [x] T039 [P] Main window in src/ui/main_window.py
+- [x] T040 [P] Macro list widget in src/ui/macro_list_widget.py
+- [x] T041 [P] Macro editor dialog in src/ui/macro_editor_dialog.py
+- [x] T042 [P] Action overlay system in src/ui/action_overlay.py
+- [x] T043 [P] Settings dialog in src/ui/settings_dialog.py
+- [x] T044 [P] Hotkey configuration dialog in src/ui/hotkey_dialog.py
 
 ### CLI Interface
-- [ ] T045 [P] CLI command interface in src/cli/cli_interface.py
-- [ ] T046 [P] Recording CLI commands in src/cli/recording_commands.py
-- [ ] T047 [P] Playback CLI commands in src/cli/playback_commands.py
-- [ ] T048 [P] Macro management CLI commands in src/cli/macro_commands.py
+- [x] T045 [P] CLI command interface in src/cli/cli_interface.py
+- [x] T046 [P] Recording CLI commands in src/cli/recording_commands.py
+- [x] T047 [P] Playback CLI commands in src/cli/playback_commands.py
+- [x] T048 [P] Macro management CLI commands in src/cli/macro_commands.py
 
 ## Phase 3.4: Integration
-- [ ] T049 Connect recording service to input capture system
-- [ ] T050 Connect playback service to action execution system
-- [ ] T051 Connect hotkey service to Windows API
-- [ ] T052 Connect GUI components to core services
-- [ ] T053 Connect CLI interface to all services
-- [ ] T054 Connect scheduling service to background execution
-- [ ] T055 Connect export/import service to file system
-- [ ] T056 Connect system tray to main application
+- [x] T049 Connect recording service to input capture system
+- [x] T050 Connect playback service to action execution system
+- [x] T051 Connect hotkey service to Windows API
+- [x] T052 Connect GUI components to core services
+- [x] T053 Connect CLI interface to all services
+- [x] T054 Connect scheduling service to background execution
+- [x] T055 Connect export/import service to file system
+- [x] T056 Connect system tray to main application
 - [ ] T057 Connect logging system to all components
 - [ ] T058 Connect error handling to all components
 
 ## Phase 3.5: Polish
-- [ ] T059 [P] Unit tests for models in tests/unit/test_models.py
-- [ ] T060 [P] Unit tests for services in tests/unit/test_services.py
-- [ ] T061 [P] Unit tests for utilities in tests/unit/test_utils.py
-- [ ] T062 [P] Unit tests for GUI components in tests/unit/test_ui.py
-- [ ] T063 Performance tests for timing accuracy (<10ms latency)
-- [ ] T064 Performance tests for memory usage with large macro sets
-- [ ] T065 [P] Update documentation in docs/
+- [x] T059 [P] Unit tests for models in tests/unit/test_models.py
+- [x] T060 [P] Unit tests for services in tests/unit/test_services.py
+- [x] T061 [P] Unit tests for utilities in tests/unit/test_utils.py
+- [x] T062 [P] Unit tests for GUI components in tests/unit/test_ui.py
+- [x] T063 Performance tests for timing accuracy (<10ms latency)
+- [x] T064 Performance tests for memory usage with large macro sets
+- [x] T065 [P] Update documentation in docs/
 - [ ] T066 Remove code duplication and optimize
-- [ ] T067 Run quickstart validation scenarios
-- [ ] T068 Create build script for PyInstaller executable
+- [x] T067 Run quickstart validation scenarios
+- [x] T068 Create build script for PyInstaller executable
 
 ## Dependencies
 - Tests (T004-T015) before implementation (T016-T048)
