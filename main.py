@@ -354,6 +354,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         action="store_true",
         help="Run pending schedules once and exit",
     )
+    parser.add_argument(
+        "--cli-only",
+        action="store_true",
+        help="Launch in CLI-only mode instead of GUI",
+    )
 
     args = parser.parse_args(argv)
     context = build_application(data_dir=args.data_dir)
@@ -371,13 +376,18 @@ def main(argv: Optional[List[str]] = None) -> int:
         list_macros(context)
         return 0
 
-    if sys.stdin.isatty():
+    if args.cli_only:
         run_cli_loop(context)
+        return 0
+
+    # Launch GUI by default
+    context.main_window.show()
+    app = QApplication.instance()
+    if app:
+        return app.exec()
     else:
-        context.logger.info(
-            "No interactive terminal detected; initialization complete. Use --cli for commands.",
-        )
-    return 0
+        context.logger.error("QApplication not initialized")
+        return 1
 
 
 if __name__ == "__main__":
