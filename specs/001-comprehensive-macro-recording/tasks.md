@@ -1,3 +1,18 @@
+Outstanding Tasks
+
+    Integration phase still requires wiring the cross-cutting concerns:
+
+        T057 – Connect logging system to all components, ensuring consistent instrumentation across the platform.
+
+T058 – Connect error handling to all components, propagating unified recovery and reporting behavior.
+
+Polish phase has one remaining refinement:
+
+    T066 – Remove code duplication and optimize, focusing on performance and maintainability improvements after the core functionality is in place.
+
+
+
+
 # Tasks: Comprehensive Macro Recording Application
 
 **Input**: Design documents from `/specs/001-comprehensive-macro-recording/`
@@ -231,3 +246,5 @@ Task: "Export/import service in src/export_import/package_service.py"
 - All Windows integration uses pywin32
 - All input capture uses pynput, keyboard, mouse libraries
 - All data storage uses JSON with pathlib
+
+
